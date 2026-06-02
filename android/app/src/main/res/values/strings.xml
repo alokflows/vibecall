@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Vibe Call</string>
+    <string name="title_activity_main">Vibe Call</string>
+    <string name="package_name">com.vibecall.app</string>
+    <string name="custom_url_scheme">com.vibecall.app</string>
+</resources>
