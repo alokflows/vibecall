@@ -44,7 +44,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v1.0
-          name: Vibe Call v1.0
+          name: Vibe Call v1.0 • build ${{ github.run_number }}
           files: VibeCall-v1.0.apk
           make_latest: true
         env:

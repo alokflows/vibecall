@@ -17,18 +17,23 @@ interface MlLine {
 }
 
 /** Group recognized lines into number candidates and parse them. */
-function extractDetections(blocks: { lines: MlLine[] }[], scaleDown: number): Detection[] {
-  // Flatten and map every line's box from canvas px back to video px.
+function extractDetections(
+  blocks: { lines: MlLine[] }[],
+  scaleDown: number,
+  cropLeft: number,
+  cropTop: number,
+): Detection[] {
+  // Flatten and map every line's box from cropped-canvas px back to video px.
   const lines: MlLine[] = [];
   for (const block of blocks) {
     for (const line of block.lines) {
       lines.push({
         text: line.text,
         boundingBox: {
-          left: line.boundingBox.left / scaleDown,
-          top: line.boundingBox.top / scaleDown,
-          right: line.boundingBox.right / scaleDown,
-          bottom: line.boundingBox.bottom / scaleDown,
+          left: line.boundingBox.left / scaleDown + cropLeft,
+          top: line.boundingBox.top / scaleDown + cropTop,
+          right: line.boundingBox.right / scaleDown + cropLeft,
+          bottom: line.boundingBox.bottom / scaleDown + cropTop,
         },
       });
     }
@@ -79,6 +84,7 @@ function extractDetections(blocks: { lines: MlLine[] }[], scaleDown: number): De
 export function useScanner(
   videoRef: React.RefObject<HTMLVideoElement | null>,
   active: boolean,
+  focusRef: React.RefObject<BoundingBox | null>,
 ): Detection[] {
   const [detections, setDetections] = useState<Detection[]>([]);
   const processingRef = useRef(false);
@@ -93,20 +99,35 @@ export function useScanner(
       const video = videoRef.current;
       const canvas = canvasRef.current;
       if (!video || !canvas || processingRef.current) return;
+      // Keep the feed alive — webviews sometimes pause it on focus changes.
+      if (video.paused && video.srcObject) video.play().catch(() => {});
       if (!video.videoWidth || !video.videoHeight) return;
 
       processingRef.current = true;
       try {
-        const scaleDown = Math.min(1, MAX_WIDTH / video.videoWidth);
+        const vw = video.videoWidth;
+        const vh = video.videoHeight;
+
+        // Crop to the focus box (in video px) when one is set; clamp to frame.
+        const focus = focusRef.current;
+        const cropLeft = focus ? Math.max(0, Math.min(focus.left, vw)) : 0;
+        const cropTop = focus ? Math.max(0, Math.min(focus.top, vh)) : 0;
+        const cropRight = focus ? Math.max(cropLeft, Math.min(focus.right, vw)) : vw;
+        const cropBottom = focus ? Math.max(cropTop, Math.min(focus.bottom, vh)) : vh;
+        const cropW = cropRight - cropLeft;
+        const cropH = cropBottom - cropTop;
+        if (cropW < 8 || cropH < 8) return;
+
+        const scaleDown = Math.min(1, MAX_WIDTH / cropW);
         if (!Number.isFinite(scaleDown) || scaleDown <= 0) return;
 
-        canvas.width = Math.floor(video.videoWidth * scaleDown);
-        canvas.height = Math.floor(video.videoHeight * scaleDown);
+        canvas.width = Math.floor(cropW * scaleDown);
+        canvas.height = Math.floor(cropH * scaleDown);
         if (canvas.width <= 0 || canvas.height <= 0) return;
 
         const ctx = canvas.getContext('2d', { willReadFrequently: true });
         if (!ctx) return;
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        ctx.drawImage(video, cropLeft, cropTop, cropW, cropH, 0, 0, canvas.width, canvas.height);
 
         const base64Image = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
         const result = await CapacitorPluginMlKitTextRecognition.detectText({
@@ -114,7 +135,7 @@ export function useScanner(
         });
 
         if (cancelled) return;
-        setDetections(extractDetections(result.blocks ?? [], scaleDown));
+        setDetections(extractDetections(result.blocks ?? [], scaleDown, cropLeft, cropTop));
       } catch (err) {
         // On unsupported platforms (e.g. browser preview) the plugin rejects;
         // swallow it so the app keeps running with no detections.
@@ -130,7 +151,7 @@ export function useScanner(
       clearInterval(id);
       setDetections([]); // reset on deactivate/unmount (in cleanup, not body)
     };
-  }, [active, videoRef]);
+  }, [active, videoRef, focusRef]);
 
   return detections;
 }

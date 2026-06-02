@@ -8,6 +8,7 @@ import {
   MessageSquare,
   Phone,
   PhoneCall,
+  PhoneOutgoing,
   X,
 } from 'lucide-react';
 import type { ComponentType } from 'react';
@@ -22,7 +23,8 @@ interface ActionMeta {
 }
 
 const ACTION_META: Record<ActionKind, ActionMeta> = {
-  dialer: { label: 'Call', icon: Phone, className: 'act-call' },
+  directCall: { label: 'Call', icon: Phone, className: 'act-call' },
+  dialer: { label: 'Dialer', icon: PhoneOutgoing, className: 'act-dialer' },
   whatsapp: { label: 'WhatsApp', icon: MessageCircle, className: 'act-wa' },
   whatsappCall: { label: 'WA Call', icon: PhoneCall, className: 'act-wacall' },
   sms: { label: 'Message', icon: MessageSquare, className: 'act-sms' },

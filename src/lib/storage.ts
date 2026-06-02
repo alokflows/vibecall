@@ -8,6 +8,7 @@ const KEYS = {
   settings: `${PREFIX}settings`,
   contacts: `${PREFIX}contacts`,
   history: `${PREFIX}history`,
+  scanbox: `${PREFIX}scanbox`,
 } as const;
 
 const HISTORY_LIMIT = 100;
@@ -15,8 +16,26 @@ const HISTORY_LIMIT = 100;
 export const DEFAULT_SETTINGS: AppSettings = {
   defaultAction: 'whatsapp',
   autoBlast: true,
-  sheetActions: ['dialer', 'whatsapp', 'sms'],
+  sheetActions: ['directCall', 'whatsapp', 'sms'],
 };
+
+/** The resizable scan box, stored as fractions of the screen (0..1). */
+export interface ScanBox {
+  fx: number;
+  fy: number;
+  fw: number;
+  fh: number;
+}
+
+export const DEFAULT_SCANBOX: ScanBox = { fx: 0.07, fy: 0.4, fw: 0.86, fh: 0.18 };
+
+export function getScanBox(): ScanBox {
+  return read<ScanBox>(KEYS.scanbox, DEFAULT_SCANBOX);
+}
+
+export function setScanBox(box: ScanBox): void {
+  write(KEYS.scanbox, box);
+}
 
 // --- low level -------------------------------------------------------------
 

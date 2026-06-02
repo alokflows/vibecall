@@ -31,11 +31,14 @@ export interface Detection {
   box: BoundingBox;
 }
 
-export type ActionKind = 'dialer' | 'whatsapp' | 'whatsappCall' | 'sms';
+export type ActionKind = 'directCall' | 'dialer' | 'whatsapp' | 'whatsappCall' | 'sms';
+
+/** The default behaviour; 'none' = Just Scan (detect & count, never auto-open). */
+export type DefaultAction = ActionKind | 'none';
 
 export interface AppSettings {
-  /** What happens on tap, and what auto-blast fires. */
-  defaultAction: ActionKind;
+  /** What auto-blast fires for a single number; 'none' = Just Scan. */
+  defaultAction: DefaultAction;
   /** When exactly one number is in view, fire defaultAction automatically. */
   autoBlast: boolean;
   /** Which actions appear in the tap sheet. */
@@ -63,7 +66,8 @@ export interface HistoryEntry {
 }
 
 export const ACTION_LABELS: Record<ActionKind, string> = {
-  dialer: 'Call',
+  directCall: 'Call',
+  dialer: 'Dialer',
   whatsapp: 'WhatsApp',
   whatsappCall: 'WhatsApp Call',
   sms: 'Message',

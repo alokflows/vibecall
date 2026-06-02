@@ -20,6 +20,21 @@ export interface Layout {
   ch: number;
 }
 
+/** Inverse of mapBoxToScreen: a rect in container/screen px -> video px. */
+export function screenRectToVideo(rect: ScreenRect, { vw, vh, cw, ch }: Layout): BoundingBox | null {
+  if (!vw || !vh || !cw || !ch) return null;
+  const scale = Math.max(cw / vw, ch / vh);
+  if (!Number.isFinite(scale) || scale <= 0) return null;
+  const offsetX = (cw - vw * scale) / 2;
+  const offsetY = (ch - vh * scale) / 2;
+  return {
+    left: (rect.left - offsetX) / scale,
+    top: (rect.top - offsetY) / scale,
+    right: (rect.left + rect.width - offsetX) / scale,
+    bottom: (rect.top + rect.height - offsetY) / scale,
+  };
+}
+
 export function mapBoxToScreen(box: BoundingBox, { vw, vh, cw, ch }: Layout): ScreenRect | null {
   if (!vw || !vh || !cw || !ch) return null;
 

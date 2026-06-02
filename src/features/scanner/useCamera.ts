@@ -29,7 +29,11 @@ export function useCamera() {
           return;
         }
         streamRef.current = stream;
-        if (videoRef.current) videoRef.current.srcObject = stream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          // Force playback so the webview never shows its native play overlay.
+          videoRef.current.play().catch(() => {});
+        }
 
         // Continuous autofocus where supported (best-effort, never fatal).
         try {
