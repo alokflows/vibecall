@@ -220,18 +220,31 @@ button {
   position: absolute;
   z-index: 4;
   border-radius: 16px;
-  /* dim everything outside the box so it's clear what gets scanned */
-  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.42);
+  /* Keep the surroundings light — just a gentle dim so it's clear what gets
+     scanned, without darkening the whole screen. */
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.26);
   touch-action: none;
   cursor: move;
+}
+
+/* A soft, colorless frosted frame — a faint white hairline with an inner glow,
+   so the box reads as a light blurred surface rather than a hard colored edge. */
+.focus-box::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: inset 0 0 30px rgba(255, 255, 255, 0.05);
+  pointer-events: none;
 }
 
 .focus-corner {
   position: absolute;
   width: 22px;
   height: 22px;
-  border: 3px solid rgba(255, 255, 255, 0.95);
-  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5));
+  border: 2.5px solid rgba(255, 255, 255, 0.8);
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.45));
   touch-action: none;
 }
 
