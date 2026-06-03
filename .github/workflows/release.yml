@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 # Only build the latest push; cancel any earlier run still in progress so two
-# runs never fight over the v1.0 release/tag.
+# runs never fight over the release tag.
 concurrency:
   group: release
   cancel-in-progress: true
@@ -44,21 +44,23 @@ jobs:
         run: bash ./gradlew assembleRelease
         
       - name: Rename APK
-        run: cp android/app/build/outputs/apk/release/app-release.apk VibeCall-v1.0.apk
+        run: cp android/app/build/outputs/apk/release/app-release.apk VibeCall-v2.0.apk
 
-      # Remove the old release + tag so the new one is freshly published "now"
-      # (otherwise the Releases page keeps showing the original publish date).
-      - name: Remove previous v1.0 release
-        run: gh release delete v1.0 --cleanup-tag --yes || true
+      # Clear the old v1.0 release and any existing v2.0 so the new one is
+      # freshly published "now" with a clean, single release on the page.
+      - name: Clean up previous releases
+        run: |
+          gh release delete v1.0 --cleanup-tag --yes || true
+          gh release delete v2.0 --cleanup-tag --yes || true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Publish v1.0 Release
+      - name: Publish v2.0 Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0
-          name: Vibe Call v1.0 • build ${{ github.run_number }}
-          files: VibeCall-v1.0.apk
+          tag_name: v2.0
+          name: Vibe Call v2.0
+          files: VibeCall-v2.0.apk
           make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
