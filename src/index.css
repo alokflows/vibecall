@@ -221,53 +221,20 @@ button {
   height: 22px;
   border: 3px solid rgba(255, 255, 255, 0.95);
   filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5));
-}
-
-.focus-corner.tl { top: -2px; left: -2px; border-right: none; border-bottom: none; border-top-left-radius: 14px; }
-.focus-corner.tr { top: -2px; right: -2px; border-left: none; border-bottom: none; border-top-right-radius: 14px; }
-.focus-corner.bl { bottom: -2px; left: -2px; border-right: none; border-top: none; border-bottom-left-radius: 14px; }
-
-.focus-scan-line {
-  position: absolute;
-  left: 8px;
-  right: 8px;
-  height: 2px;
-  border-radius: 2px;
-  background: linear-gradient(90deg, transparent, var(--green), transparent);
-  box-shadow: 0 0 10px var(--green);
-  animation: scanSweep 2.4s ease-in-out infinite;
-}
-
-@keyframes scanSweep {
-  0%, 100% { top: 10%; opacity: 0.4; }
-  50% { top: 90%; opacity: 1; }
-}
-
-.focus-handle {
-  position: absolute;
-  right: -14px;
-  bottom: -14px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--green);
-  border: 2.5px solid #fff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   touch-action: none;
-  cursor: nwse-resize;
 }
 
-.focus-handle::after {
+/* Larger invisible hit area so the minimal brackets stay easy to grab. */
+.focus-corner::before {
   content: '';
   position: absolute;
-  inset: 0;
-  margin: auto;
-  width: 14px;
-  height: 14px;
-  border-right: 2.5px solid rgba(255, 255, 255, 0.9);
-  border-bottom: 2.5px solid rgba(255, 255, 255, 0.9);
-  transform: translate(-1px, -1px);
+  inset: -16px;
 }
+
+.focus-corner.tl { top: -2px; left: -2px; border-right: none; border-bottom: none; border-top-left-radius: 14px; cursor: nwse-resize; }
+.focus-corner.tr { top: -2px; right: -2px; border-left: none; border-bottom: none; border-top-right-radius: 14px; cursor: nesw-resize; }
+.focus-corner.bl { bottom: -2px; left: -2px; border-right: none; border-top: none; border-bottom-left-radius: 14px; cursor: nesw-resize; }
+.focus-corner.br { bottom: -2px; right: -2px; border-left: none; border-top: none; border-bottom-right-radius: 14px; cursor: nwse-resize; }
 
 /* ----- AR boxes (positions are animated in JS, so no CSS position transition) */
 
@@ -529,7 +496,6 @@ button {
 .act-call .icon-wrapper { background: var(--green); box-shadow: 0 8px 20px rgba(52, 199, 89, 0.32); }
 .act-dialer .icon-wrapper { background: #5e5ce6; box-shadow: 0 8px 20px rgba(94, 92, 230, 0.32); }
 .act-wa .icon-wrapper { background: var(--whatsapp); box-shadow: 0 8px 20px rgba(37, 211, 102, 0.32); }
-.act-wacall .icon-wrapper { background: #128c7e; box-shadow: 0 8px 20px rgba(18, 140, 126, 0.32); }
 .act-sms .icon-wrapper { background: var(--sms); box-shadow: 0 8px 20px rgba(48, 176, 199, 0.32); }
 
 .save-toggle {

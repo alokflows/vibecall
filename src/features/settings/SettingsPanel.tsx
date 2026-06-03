@@ -4,7 +4,7 @@ import { useSettings } from '../../lib/useStore';
 import { ACTION_LABELS } from '../../lib/types';
 import type { ActionKind, DefaultAction } from '../../lib/types';
 
-const ALL_ACTIONS: ActionKind[] = ['directCall', 'dialer', 'whatsapp', 'whatsappCall', 'sms'];
+const ALL_ACTIONS: ActionKind[] = ['directCall', 'dialer', 'whatsapp', 'sms'];
 
 // Choices for the default behaviour, including "Just Scan".
 const DEFAULT_OPTIONS: { kind: DefaultAction; label: string; hint?: string }[] = [
@@ -12,7 +12,6 @@ const DEFAULT_OPTIONS: { kind: DefaultAction; label: string; hint?: string }[] =
   { kind: 'directCall', label: 'Call', hint: 'Places the call immediately (asks for call permission once).' },
   { kind: 'dialer', label: 'Dialer', hint: 'Opens the dialer with the number filled in.' },
   { kind: 'whatsapp', label: 'WhatsApp' },
-  { kind: 'whatsappCall', label: 'WhatsApp Call' },
   { kind: 'sms', label: 'Message' },
 ];
 
@@ -51,12 +50,6 @@ export function SettingsPanel() {
             </button>
           ))}
         </div>
-        {settings.defaultAction === 'whatsappCall' && (
-          <p className="settings-note">
-            WhatsApp has no direct-call link, so this opens the chat (one tap to
-            call) on some phones.
-          </p>
-        )}
       </section>
 
       {settings.defaultAction !== 'none' && (

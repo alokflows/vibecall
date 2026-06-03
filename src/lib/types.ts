@@ -31,7 +31,7 @@ export interface Detection {
   box: BoundingBox;
 }
 
-export type ActionKind = 'directCall' | 'dialer' | 'whatsapp' | 'whatsappCall' | 'sms';
+export type ActionKind = 'directCall' | 'dialer' | 'whatsapp' | 'sms';
 
 /** The default behaviour; 'none' = Just Scan (detect & count, never auto-open). */
 export type DefaultAction = ActionKind | 'none';
@@ -69,6 +69,5 @@ export const ACTION_LABELS: Record<ActionKind, string> = {
   directCall: 'Call',
   dialer: 'Dialer',
   whatsapp: 'WhatsApp',
-  whatsappCall: 'WhatsApp Call',
   sms: 'Message',
 };

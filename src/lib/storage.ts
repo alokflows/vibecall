@@ -1,7 +1,8 @@
 // Offline, typed persistence on top of localStorage.
 // Everything lives on-device; there is no network anywhere in this app.
 
-import type { AppSettings, Contact, HistoryEntry } from './types';
+import { ACTION_LABELS } from './types';
+import type { ActionKind, AppSettings, Contact, HistoryEntry } from './types';
 
 const PREFIX = 'vibecall:';
 const KEYS = {
@@ -16,7 +17,7 @@ const HISTORY_LIMIT = 100;
 export const DEFAULT_SETTINGS: AppSettings = {
   defaultAction: 'whatsapp',
   autoBlast: true,
-  sheetActions: ['directCall', 'whatsapp', 'sms'],
+  sheetActions: ['directCall', 'dialer', 'whatsapp', 'sms'],
 };
 
 /** The resizable scan box, stored as fractions of the screen (0..1). */
@@ -85,7 +86,19 @@ function uid(): string {
 // --- settings --------------------------------------------------------------
 
 export function getSettings(): AppSettings {
-  return read<AppSettings>(KEYS.settings, DEFAULT_SETTINGS);
+  const s = read<AppSettings>(KEYS.settings, DEFAULT_SETTINGS);
+  // Drop actions removed in newer versions so settings saved by an older
+  // build can't point at a button that no longer exists.
+  const known = (a: ActionKind) => a in ACTION_LABELS;
+  const sheetActions = s.sheetActions.filter(known);
+  return {
+    ...s,
+    sheetActions: sheetActions.length ? sheetActions : DEFAULT_SETTINGS.sheetActions,
+    defaultAction:
+      s.defaultAction === 'none' || known(s.defaultAction)
+        ? s.defaultAction
+        : DEFAULT_SETTINGS.defaultAction,
+  };
 }
 
 export function setSettings(next: AppSettings): void {

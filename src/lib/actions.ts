@@ -28,10 +28,6 @@ function urlFor(kind: ActionKind, e164: string): string {
       return `sms:${e164}`;
     case 'whatsapp':
       return `https://wa.me/${d}`;
-    case 'whatsappCall':
-      // Best effort: WhatsApp has no documented direct-call deep link.
-      // We try the call scheme and fall back to the chat below.
-      return `whatsapp://call?phone=${d}`;
   }
 }
 
@@ -78,13 +74,7 @@ export async function executeAction(
     return launched;
   }
 
-  let launched = await open(urlFor(kind, number.e164));
-
-  // WhatsApp call has no stable scheme — fall back to opening the chat.
-  if (!launched && kind === 'whatsappCall') {
-    launched = await open(`https://wa.me/${digits(number.e164)}`);
-  }
-
+  const launched = await open(urlFor(kind, number.e164));
   recordHistory(number, kind);
   return launched;
 }

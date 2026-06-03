@@ -1,5 +1,6 @@
 // The resizable scan box. Only what's inside it gets scanned. Drag the box to
-// move it; pull the bottom-right handle to resize. Stored as screen fractions
+// move it; pull any corner to zoom it bigger or smaller — it grows symmetrically
+// from its centre, so every edge spreads out equally. Stored as screen fractions
 // so it remembers across sessions and adapts to any screen size.
 
 import { useRef } from 'react';
@@ -16,40 +17,53 @@ interface Props {
   onCommit: (box: ScanBox) => void;
 }
 
-type Mode = 'move' | 'resize';
+type Corner = 'tl' | 'tr' | 'bl' | 'br';
+const CORNERS: Corner[] = ['tl', 'tr', 'bl', 'br'];
+
+type Drag =
+  | { mode: 'move'; px: number; py: number; start: ScanBox }
+  | { mode: 'resize'; corner: Corner; px: number; py: number; start: ScanBox };
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
 export function FocusBox({ box, cw, ch, onChange, onCommit }: Props) {
-  const drag = useRef<{ mode: Mode; px: number; py: number; start: ScanBox } | null>(null);
+  const drag = useRef<Drag | null>(null);
 
-  const start = (mode: Mode, e: React.PointerEvent) => {
+  const startMove = (e: React.PointerEvent) => {
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    drag.current = { mode: 'move', px: e.clientX, py: e.clientY, start: box };
+  };
+
+  const startResize = (corner: Corner) => (e: React.PointerEvent) => {
     e.stopPropagation();
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    drag.current = { mode, px: e.clientX, py: e.clientY, start: box };
+    drag.current = { mode: 'resize', corner, px: e.clientX, py: e.clientY, start: box };
   };
-  const onDownMove = (e: React.PointerEvent) => start('move', e);
-  const onDownResize = (e: React.PointerEvent) => start('resize', e);
 
   const onMove = (e: React.PointerEvent) => {
     const d = drag.current;
     if (!d || !cw || !ch) return;
-    const dxFrac = (e.clientX - d.px) / cw;
-    const dyFrac = (e.clientY - d.py) / ch;
+    const dx = (e.clientX - d.px) / cw;
+    const dy = (e.clientY - d.py) / ch;
 
     if (d.mode === 'move') {
       onChange({
         ...d.start,
-        fx: clamp(d.start.fx + dxFrac, 0, 1 - d.start.fw),
-        fy: clamp(d.start.fy + dyFrac, 0, 1 - d.start.fh),
+        fx: clamp(d.start.fx + dx, 0, 1 - d.start.fw),
+        fy: clamp(d.start.fy + dy, 0, 1 - d.start.fh),
       });
-    } else {
-      onChange({
-        ...d.start,
-        fw: clamp(d.start.fw + dxFrac, MIN_W, 1 - d.start.fx),
-        fh: clamp(d.start.fh + dyFrac, MIN_H, 1 - d.start.fy),
-      });
+      return;
     }
+
+    // Zoom symmetrically around the box centre: pulling a corner out grows the
+    // opposite edge by the same amount, so the box spreads equally on all sides.
+    const cx = d.start.fx + d.start.fw / 2;
+    const cy = d.start.fy + d.start.fh / 2;
+    const sx = d.corner === 'tr' || d.corner === 'br' ? 1 : -1;
+    const sy = d.corner === 'bl' || d.corner === 'br' ? 1 : -1;
+    const halfW = clamp(d.start.fw / 2 + sx * dx, MIN_W / 2, Math.min(cx, 1 - cx));
+    const halfH = clamp(d.start.fh / 2 + sy * dy, MIN_H / 2, Math.min(cy, 1 - cy));
+    onChange({ fx: cx - halfW, fy: cy - halfH, fw: halfW * 2, fh: halfH * 2 });
   };
 
   const end = (e: React.PointerEvent) => {
@@ -70,22 +84,21 @@ export function FocusBox({ box, cw, ch, onChange, onCommit }: Props) {
     <div
       className="focus-box"
       style={style}
-      onPointerDown={onDownMove}
+      onPointerDown={startMove}
       onPointerMove={onMove}
       onPointerUp={end}
       onPointerCancel={end}
     >
-      <span className="focus-corner tl" />
-      <span className="focus-corner tr" />
-      <span className="focus-corner bl" />
-      <span className="focus-scan-line" />
-      <span
-        className="focus-handle"
-        onPointerDown={onDownResize}
-        onPointerMove={onMove}
-        onPointerUp={end}
-        onPointerCancel={end}
-      />
+      {CORNERS.map((c) => (
+        <span
+          key={c}
+          className={`focus-corner ${c}`}
+          onPointerDown={startResize(c)}
+          onPointerMove={onMove}
+          onPointerUp={end}
+          onPointerCancel={end}
+        />
+      ))}
     </div>
   );
 }
