@@ -95,6 +95,17 @@ button {
   opacity: 1;
 }
 
+/* Kill the WebView's native media UI so its play button / poster never shows
+   over the live feed (it appears the instant the element is paused). */
+.video-feed::-webkit-media-controls,
+.video-feed::-webkit-media-controls-enclosure,
+.video-feed::-webkit-media-controls-panel,
+.video-feed::-webkit-media-controls-overlay-play-button,
+.video-feed::-webkit-media-controls-start-playback-button {
+  display: none !important;
+  -webkit-appearance: none;
+}
+
 .scanner-status,
 .scanner-hint {
   position: absolute;
@@ -145,7 +156,7 @@ button {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--green);
+  background: rgba(255, 255, 255, 0.85);
   animation: dotPulse 1.2s ease-in-out infinite;
 }
 
