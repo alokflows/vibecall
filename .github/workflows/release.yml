@@ -8,6 +8,12 @@ on:
 permissions:
   contents: write
 
+# Only build the latest push; cancel any earlier run still in progress so two
+# runs never fight over the v1.0 release/tag.
+concurrency:
+  group: release
+  cancel-in-progress: true
+
 jobs:
   release:
     runs-on: ubuntu-latest
