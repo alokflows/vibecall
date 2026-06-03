@@ -40,6 +40,13 @@ jobs:
       - name: Rename APK
         run: cp android/app/build/outputs/apk/release/app-release.apk VibeCall-v1.0.apk
 
+      # Remove the old release + tag so the new one is freshly published "now"
+      # (otherwise the Releases page keeps showing the original publish date).
+      - name: Remove previous v1.0 release
+        run: gh release delete v1.0 --cleanup-tag --yes || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Publish v1.0 Release
         uses: softprops/action-gh-release@v2
         with:
